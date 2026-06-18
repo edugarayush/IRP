@@ -223,6 +223,8 @@ select.mini{padding:4px 7px;font-size:11px;border-radius:6px;border-color:rgba(2
     <button class="nav-item" onclick="sw('config',this)"><span class="nav-icon">⚙️</span> Mi plan</button>
     <button class="nav-item" onclick="sw('banco',this)"><span class="nav-icon">📋</span> Banco de hábitos</button>
     <button class="nav-item" onclick="sw('hist',this)"><span class="nav-icon">📈</span> Historial</button>
+    <div class="nav-section">Ayuda</div>
+    <button class="nav-item" onclick="sw('manual',this)"><span class="nav-icon">📖</span> Manual del empresario</button>
   </nav>
   <div class="sidebar-bottom">
     <div class="api-mini" onclick="openModal()">
@@ -466,7 +468,7 @@ function sw(tab,el){
 function goTab(tab){
   document.querySelectorAll('.nav-item').forEach(b=>{
     const t=b.textContent.trim();
-    if((tab==='checkin'&&t.includes('Check'))||(tab==='config'&&t.includes('plan'))||(tab==='banco'&&t.includes('Banco'))||(tab==='hist'&&t.includes('Historial'))||(tab==='senales'&&t.includes('Señales')))b.click();
+    if((tab==='checkin'&&t.includes('Check'))||(tab==='config'&&t.includes('plan'))||(tab==='banco'&&t.includes('Banco'))||(tab==='hist'&&t.includes('Historial'))||(tab==='senales'&&t.includes('Señales'))||(tab==='manual'&&t.includes('Manual')))b.click();
   });
 }
 
@@ -493,6 +495,7 @@ function render(){
   else if(TAB==='config')rConfig(c);
   else if(TAB==='banco')rBanco(c);
   else if(TAB==='hist')rHist(c);
+  else if(TAB==='manual')rManual(c);
 }
 
 // ── DASHBOARD ──
@@ -905,6 +908,245 @@ Aplicá la filosofía: Señal vs Ruido, Regla del 5%, Dominio de números. Máxi
     box.style.opacity='1';
     box.textContent=data.content?.[0]?.text||'Sin respuesta.';
   }catch(e){box.style.opacity='1';box.textContent='Error al conectar. Verificá tu API key.';}
+}
+
+// ── MANUAL ──
+function rManual(c){
+  const sections=[
+    {
+      id:'inicio',
+      icon:'🚀',
+      title:'Primeros pasos',
+      color:'#a89eff',
+      content:`
+      <p>Bienvenido al <b>IRP — Índice de Rendimiento del Empresario</b>. Esta app no es un tracker de hábitos genérico. Es un sistema de medición de tu avance hacia la libertad personal y financiera, con la filosofía de Kevin O'Leary y Steve Jobs como columna vertebral.</p>
+      <p style="margin-top:10px">Todo lo que registrás se guarda en tu dispositivo (localStorage). No hay cuenta, no hay servidor, no hay terceros. Tus datos son exclusivamente tuyos.</p>
+      <div class="quote-box" style="margin-top:14px"><div class="quote-text">"El emprendimiento es el único camino hacia la libertad personal absoluta."</div><div class="quote-author">— Kevin O'Leary</div></div>`
+    },
+    {
+      id:'areas',
+      icon:'🏛️',
+      title:'Las 5 áreas del empresario',
+      color:'#20d68a',
+      content:`
+      <p>La app mide tu rendimiento en 5 capitales. No son categorías de bienestar — son los pilares que sostienen la libertad financiera:</p>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+        ${Object.entries(AREAS).map(([k,a])=>`
+        <div style="display:flex;gap:12px;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;align-items:flex-start">
+          <div style="width:8px;height:8px;border-radius:50%;background:${a.color};box-shadow:0 0 8px ${a.glow};margin-top:5px;flex-shrink:0"></div>
+          <div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;color:#fff;letter-spacing:.04em">${a.emoji} ${a.label}</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:2px">${a.sublabel}</div>
+            <div style="font-size:11px;color:rgba(255,180,60,0.7);font-style:italic;margin-top:5px;line-height:1.6">${a.quote}</div>
+          </div>
+        </div>`).join('')}
+      </div>`
+    },
+    {
+      id:'indice',
+      icon:'📊',
+      title:'Cómo se calcula tu índice',
+      color:'#4da6ff',
+      content:`
+      <p>Tu <b>Score de Libertad</b> es un número entre 0 y 100 que refleja qué tan bien estás ejecutando tu plan de empresario. Se calcula así:</p>
+      <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
+        <div style="padding:12px 14px;background:rgba(77,166,255,0.07);border:1px solid rgba(77,166,255,0.2);border-radius:10px">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#4da6ff;letter-spacing:.06em;font-size:12px;text-transform:uppercase">85% — Hábitos del check-in</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:4px;line-height:1.6">Porcentaje de hábitos marcados como "Sí" en el check-in nocturno, sobre el total de hábitos que aplican a ese día según su frecuencia configurada.</div>
+        </div>
+        <div style="padding:12px 14px;background:rgba(245,166,35,0.07);border:1px solid rgba(245,166,35,0.2);border-radius:10px">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#f5a623;letter-spacing:.06em;font-size:12px;text-transform:uppercase">15% — Señales del día</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:4px;line-height:1.6">Porcentaje de señales críticas completadas ese día. Si definís 3 señales y completás 2, suman 10 puntos extras al score.</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;display:flex;flex-direction:column;gap:6px">
+        ${[{min:90,lbl:'ÉLITE',col:'#20d68a',desc:'Modo empresario activado. Estás en el top 1% de ejecución.'},
+           {min:75,lbl:'ALTO RENDIMIENTO',col:'#4da6ff',desc:'Señal dominante. Seguís construyendo libertad.'},
+           {min:60,lbl:'EN CONSTRUCCIÓN',col:'#f5a623',desc:'Vas bien pero hay áreas que necesitan atención.'},
+           {min:40,lbl:'ZONA DE RIESGO',col:'#f5a623',desc:'Reagrupate. Revisá tu plan y simplificá.'},
+           {min:0, lbl:'RESET NECESARIO',col:'#f0606a',desc:'Es el momento de elegir. El 100% de los que abandonaron también empezaron.'}
+        ].map(s=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(255,255,255,0.02);border-radius:8px;border-left:3px solid ${s.col}">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:${s.col};font-size:11px;letter-spacing:.08em;width:140px;flex-shrink:0">${s.min}%+ ${s.lbl}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.45)">${s.desc}</div>
+        </div>`).join('')}
+      </div>`
+    },
+    {
+      id:'senales',
+      icon:'🎯',
+      title:'Las señales del día — el método Jobs',
+      color:'#f5a623',
+      content:`
+      <div class="quote-box"><div class="quote-text">"Las señales son las 3 a 5 tareas críticas que deben terminarse en las próximas 18 horas de vigilia. Todo lo demás es ruido."</div><div class="quote-author">— Jobs via O'Leary</div></div>
+      <p style="margin-top:14px">Esta es la sección más poderosa de la app. Cada mañana, antes de abrir cualquier red social o email, definís tus señales del día.</p>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+        <div style="padding:12px 14px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.07)">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#fff;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Reglas de las señales</div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:6px">
+            ${['Máximo 5 señales por día — si tenés más, no son señales, son ruido.',
+               'Cada señal debe ser completable en las próximas 18 horas.',
+               'Una señal es una acción específica, no un área vaga (mal: "trabajar en el proyecto" — bien: "terminar el módulo de precios").',
+               'Definílas a primera hora de la mañana, antes de revisar el teléfono.',
+               'Al hacer el check-in nocturno, marcá las que completaste. Forman el 15% de tu score diario.'
+            ].map(r=>`<li style="display:flex;gap:8px;font-size:12px;color:rgba(255,255,255,0.6)"><span style="color:#f5a623;flex-shrink:0">→</span>${r}</li>`).join('')}
+          </ul>
+        </div>
+      </div>`
+    },
+    {
+      id:'checkin',
+      icon:'✅',
+      title:'El check-in nocturno',
+      color:'#20d68a',
+      content:`
+      <p>El check-in es tu auditoria diaria. Se hace <b>de noche, antes de dormir</b>. Es el momento donde le rendís cuentas a la única persona que importa: vos mismo.</p>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+        <div style="padding:12px 14px;background:rgba(32,214,138,0.06);border:1px solid rgba(32,214,138,0.15);border-radius:10px">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#20d68a;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Protocolo de 5 minutos</div>
+          ${['Abrí la app en el check-in.',
+             'Por cada hábito que aparece, respondé Sí o No — honestamente.',
+             'No aparecen todos los hábitos: solo los que configuraste para ese día de la semana.',
+             'Si respondiste Sí a todos, tu score del día es máximo. Si omitís responder, ese hábito no cuenta.',
+             'Al terminar, tu índice del día se calcula solo.'
+          ].map((s,i)=>`<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid rgba(32,214,138,0.08);font-size:12px;color:rgba(255,255,255,0.6)"><span style="font-family:'Syne',sans-serif;font-weight:700;color:#20d68a;flex-shrink:0;width:18px">${i+1}</span>${s}</div>`).join('')}
+        </div>
+      </div>
+      <div class="quote-box" style="margin-top:14px"><div class="quote-text">"Sé honesto. Esto es solo para vos. El autoengaño es el lujo más caro del emprendedor."</div><div class="quote-author">— Filosofía IRP</div></div>`
+    },
+    {
+      id:'plan',
+      icon:'⚙️',
+      title:'Configurar tu plan semanal',
+      color:'#a89eff',
+      content:`
+      <p>El plan es el corazón de la personalización. Podés tener 5 hábitos activos esta semana y 15 la próxima. Todo es configurable.</p>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+        <div style="padding:12px 14px;background:rgba(168,158,255,0.07);border:1px solid rgba(168,158,255,0.15);border-radius:10px">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#a89eff;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Frecuencias disponibles</div>
+          ${Object.entries(FREQS).map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px"><span style="color:rgba(255,255,255,0.6)">${v}</span><span style="font-family:'Barlow Condensed',sans-serif;color:#a89eff;letter-spacing:.06em;font-size:11px">${k}</span></div>`).join('')}
+        </div>
+        <div style="padding:12px 14px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.07)">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#fff;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Estrategia de configuración</div>
+          ${['Semana de lanzamiento: activá solo 5-7 hábitos. La constancia es más valiosa que la ambición.',
+             'Cuando llegues al 75%+ de score durante 2 semanas seguidas, agregá 2-3 hábitos nuevos.',
+             'Los hábitos desactivados conservan su historial — podés reactivarlos sin perder datos.',
+             'Los hábitos de Lun-Vie no aparecen los fines de semana. Usá esto para proteger tu recuperación.',
+             'Podés agregar hábitos propios además del banco predefinido.'
+          ].map(s=>`<div style="display:flex;gap:8px;padding:5px 0;font-size:12px;color:rgba(255,255,255,0.55)"><span style="color:#a89eff;flex-shrink:0">→</span>${s}</div>`).join('')}
+        </div>
+      </div>`
+    },
+    {
+      id:'okr',
+      icon:'✦',
+      title:'OKR del empresario — IA integrada',
+      color:'#f5a623',
+      content:`
+      <p>Cada semana la IA analiza tus KPIs por área y genera un OKR (Objetivo + 2 Key Results) aplicando la filosofía O'Leary al área donde más estás fallando.</p>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+        <div style="padding:12px 14px;background:rgba(255,165,0,0.06);border:1px solid rgba(255,165,0,0.15);border-radius:10px">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#f5a623;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Para activar la IA</div>
+          ${['Obtené tu API key en console.anthropic.com (creá una cuenta gratuita).',
+             'En la app, hacé clic en el punto de estado abajo a la izquierda del sidebar.',
+             'Pegá tu key y guardá. Se almacena solo en tu dispositivo.',
+             'El OKR se genera automáticamente al abrir el dashboard.',
+             'Podés regenerarlo manualmente con el botón "Regenerar".'
+          ].map((s,i)=>`<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,165,0,0.08);font-size:12px;color:rgba(255,255,255,0.6)"><span style="font-family:'Syne',sans-serif;font-weight:700;color:#f5a623;flex-shrink:0;width:18px">${i+1}</span>${s}</div>`).join('')}
+        </div>
+        <div class="quote-box"><div class="quote-text">"Si no conocés tus números, merecés arder en el infierno empresarial."</div><div class="quote-author">— Kevin O'Leary</div></div>
+      </div>`
+    },
+    {
+      id:'filosofia',
+      icon:'🧠',
+      title:'Filosofía base — O\'Leary & Jobs',
+      color:'#4da6ff',
+      content:`
+      <p>Esta app no es neutral. Está construida sobre un conjunto específico de principios. Conocerlos te ayuda a entender por qué cada hábito importa.</p>
+      <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
+        ${[
+          {title:'Señal vs. Ruido',color:'#a89eff',text:'Los genios operan con 80% señal y 20% ruido. La señal son tus 3-5 tareas críticas del día. Todo lo demás — redes, emails reactivos, conversaciones sin valor — es ruido. Si tu ratio cae a 50/50, fracasarás.'},
+          {title:'Estrategia Georgette',color:'#20d68a',text:'Regla del 5%: nunca más del 5% de tu patrimonio en un solo activo. Regla del 20%: ningún sector supera el 20%. Nunca gastés el capital principal — viví de dividendos e intereses.'},
+          {title:'El aprendiz de 24 meses',color:'#f5a623',text:'Antes de lanzar tu empresa, trabajá 24 meses en el sector que te apasiona, aunque sea gratis. Entendé cómo se mueven todos los engranajes antes de arriesgar capital propio.'},
+          {title:'El protocolo de 90 segundos',color:'#4da6ff',text:'Debés poder explicar tu idea en 90 segundos o menos. Si no podés, no la entendés lo suficiente. Esta habilidad se entrena — practicá frente al espejo cada semana.'},
+          {title:'Due diligence relacional',color:'#f0606a',text:'La persona con quien te casás es la decisión financiera más crítica de tu vida. El divorcio puede aniquilar dos tercios de tu riqueza. Auditá los hábitos de gasto de tu pareja antes de comprometerte.'},
+          {title:'El caos creativo',color:'#a89eff',text:'Un gran líder necesita el ying y el yang: disciplina extrema en el negocio, pero también actividades que lo saquen del negocio (música, deporte, viajes). Las personas eclécticas encuentran soluciones creativas que un robot no vería.'}
+        ].map(p=>`<div style="padding:13px 15px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;border-left:3px solid ${p.color}">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:${p.color};font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">${p.title}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.7">${p.text}</div>
+        </div>`).join('')}
+      </div>`
+    },
+    {
+      id:'datos',
+      icon:'💾',
+      title:'Tus datos — privacidad total',
+      color:'#20d68a',
+      content:`
+      <p>No hay servidor. No hay cuenta. No hay terceros. Todo vive en el localStorage de tu navegador en este dispositivo.</p>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+        <div style="padding:12px 14px;background:rgba(32,214,138,0.05);border:1px solid rgba(32,214,138,0.15);border-radius:10px">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#20d68a;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Lo que se guarda localmente</div>
+          ${['Tu plan activo (hábitos y frecuencias configurados).',
+             'Tu historial de check-ins (logs diarios de Sí/No).',
+             'Tus señales del día y su estado de completado.',
+             'Tus hábitos personalizados agregados.',
+             'Tu API key de Anthropic (encriptada en tu dispositivo).'
+          ].map(s=>`<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid rgba(32,214,138,0.08);font-size:12px;color:rgba(255,255,255,0.6)"><span style="color:#20d68a;flex-shrink:0">✓</span>${s}</div>`).join('')}
+        </div>
+        <div style="padding:12px 14px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.07)">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#fff;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Backup manual</div>
+          <p style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:10px;line-height:1.7">Si limpiás el caché del navegador o cambiás de dispositivo, los datos se pierden. Para hacer backup, abrí la consola del navegador (F12) y ejecutá:</p>
+          <div style="background:rgba(0,0,0,0.4);border-radius:6px;padding:10px 12px;font-family:monospace;font-size:12px;color:#a89eff;border:1px solid rgba(255,255,255,0.08)">copy(localStorage.getItem('irp_v2'))</div>
+          <p style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:8px">Guardá ese texto. Para restaurar: <span style="font-family:monospace;color:#a89eff">localStorage.setItem('irp_v2', TU_BACKUP)</span> y recargá la página.</p>
+        </div>
+      </div>`
+    }
+  ];
+
+  let activeSection = 'inicio';
+
+  function buildManual(){
+    const sec = sections.find(s=>s.id===activeSection)||sections[0];
+    return `
+    <div class="page-title">📖 Manual del empresario</div>
+    <div class="page-subtitle">Todo lo que necesitás saber para sacarle el máximo</div>
+    <div style="display:flex;gap:14px;align-items:flex-start">
+      <div style="width:200px;min-width:200px;display:flex;flex-direction:column;gap:3px">
+        ${sections.map(s=>`
+        <div onclick="setManualSection('${s.id}')" style="display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:8px;cursor:pointer;transition:all .18s;background:${s.id===activeSection?'rgba(255,255,255,0.07)':'transparent'};border:1px solid ${s.id===activeSection?'rgba(255,255,255,0.1)':'transparent'}">
+          <span style="font-size:14px;flex-shrink:0">${s.icon}</span>
+          <span style="font-size:12px;color:${s.id===activeSection?'#fff':'rgba(255,255,255,0.45)'};font-family:'Barlow',sans-serif;font-weight:${s.id===activeSection?'600':'400'};line-height:1.3">${s.title}</span>
+        </div>`).join('')}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div class="card" style="border-color:rgba(${sec.color==='#20d68a'?'32,214,138':sec.color==='#a89eff'?'168,158,255':sec.color==='#4da6ff'?'77,166,255':sec.color==='#f5a623'?'245,166,35':'240,96,106'},0.2)">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.06)">
+            <span style="font-size:22px">${sec.icon}</span>
+            <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:#fff">${sec.title}</div>
+          </div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.8;font-family:'Barlow',sans-serif">
+            ${sec.content}
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:20px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.05)">
+            ${sections.indexOf(sec)>0
+              ?`<button class="btn" onclick="setManualSection('${sections[sections.indexOf(sec)-1].id}')">← Anterior</button>`
+              :'<div></div>'}
+            ${sections.indexOf(sec)<sections.length-1
+              ?`<button class="btn btn-primary" onclick="setManualSection('${sections[sections.indexOf(sec)+1].id}')">Siguiente →</button>`
+              :`<button class="btn btn-primary" onclick="goTab('dash')">Ir al dashboard ↗</button>`}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  c.innerHTML = buildManual();
+
+  window.setManualSection = function(id){
+    activeSection = id;
+    c.innerHTML = buildManual();
+  };
 }
 
 // ── INIT ──
