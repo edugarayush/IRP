@@ -271,14 +271,15 @@ select.mini{padding:4px 7px;font-size:11px;border-radius:6px;border-color:rgba(2
 
 <div class="modal-overlay" id="modal">
   <div class="modal">
-    <h3>Configurar API Key</h3>
-    <p>Ingresá tu API key de Anthropic para activar el asistente IA y los OKRs del empresario. Se guarda solo en tu navegador — nunca en ningún servidor.</p>
+    <h3>Activar OKR con IA</h3>
+    <p>La IA genera cada semana un OKR personalizado basado en tus KPIs reales, aplicando la filosofía O'Leary al área donde más estás fallando. Para activarla necesitás una API key de Anthropic — el costo es mínimo (menos de $0.01 por consulta semanal).</p>
+    <p style="margin-bottom:14px;font-size:12px;color:rgba(255,255,255,0.35)">1. Creá una cuenta gratuita en console.anthropic.com → 2. Generá una API key → 3. Pegala acá abajo</p>
     <input type="password" id="api-input" placeholder="sk-ant-..."/>
     <div style="display:flex;gap:8px">
-      <button class="btn btn-primary" onclick="saveKey()">Guardar</button>
-      <button class="btn" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveKey()">Activar IA</button>
+      <button class="btn" onclick="closeModal()">Ahora no</button>
     </div>
-    <p style="margin-top:14px;font-size:11px;color:rgba(255,255,255,0.25)">Conseguís tu key en <a href="https://console.anthropic.com" target="_blank" style="color:#a89eff">console.anthropic.com</a></p>
+    <p style="margin-top:14px;font-size:11px;color:rgba(255,255,255,0.2)">Tu key se guarda solo en tu dispositivo. La app funciona perfectamente sin ella.</p>
   </div>
 </div>
 
@@ -510,7 +511,7 @@ function saveKey(){const v=document.getElementById('api-input').value.trim();if(
 function updKey(){
   const ok=!!getKey();
   document.getElementById('api-dot').className='api-dot'+(ok?' ok':'');
-  document.getElementById('api-status').textContent=ok?'IA activa':'API key no configurada';
+  document.getElementById('api-status').textContent=ok?'IA activa — OKR habilitado':'Activar IA (opcional)';
 }
 function openModal(){document.getElementById('api-input').value=getKey();document.getElementById('modal').classList.add('open');}
 function closeModal(){document.getElementById('modal').classList.remove('open');}
@@ -587,6 +588,7 @@ function rDash(c){
     }).join('')}
   </div>
 
+  ${getKey()?`
   <div class="card-gold">
     <div class="ai-label">✦ OKR del empresario — esta semana</div>
     <div class="ai-box" id="okr-box" style="background:rgba(255,165,0,0.05);border-color:rgba(255,165,0,0.15);color:#fff">Calculando tu OKR...</div>
@@ -594,7 +596,8 @@ function rDash(c){
       <button class="btn btn-gold" onclick="loadOKR(${JSON.stringify(av)})">Regenerar ↗</button>
       <button class="btn" onclick="openModal()">⚙ API key</button>
     </div>
-  </div>
+  </div>`
+  :''}
 
   <div class="card">
     <div class="sec">Estado operativo hoy</div>
@@ -619,7 +622,7 @@ function rDash(c){
 
   animCount(document.getElementById('idx-c'),i7);
   animCount(document.getElementById('streak-c'),st,700);
-  setTimeout(()=>loadOKR(av),400);
+  if(getKey()) setTimeout(()=>loadOKR(av),400);
 }
 
 function randomQuote(){
