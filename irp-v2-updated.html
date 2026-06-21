@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IRP — Índice de Rendimiento del Empresario</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{background:#06060e;color-scheme:dark}
+/* TIPOGRAFÍA BASE +10% (13px → 14px base) */
+body{font-family:'Barlow',sans-serif;background:#06060e;color:#f0f0f8;min-height:100vh;font-size:14px;line-height:1.5;overflow-x:hidden;-webkit-text-size-adjust:100%}
+
+/* NOISE */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.7}
+
+/* ORBS */
+.orb{position:fixed;border-radius:50%;filter:blur(130px);pointer-events:none;z-index:0}
+.orb1{width:700px;height:700px;background:radial-gradient(circle,rgba(108,99,255,0.13) 0%,transparent 70%);top:-250px;left:-150px;animation:drift 22s ease-in-out infinite alternate}
+.orb2{width:500px;height:500px;background:radial-gradient(circle,rgba(0,210,120,0.07) 0%,transparent 70%);bottom:-200px;right:-80px;animation:drift 28s ease-in-out infinite alternate-reverse}
+.orb3{width:380px;height:380px;background:radial-gradient(circle,rgba(255,160,60,0.05) 0%,transparent 70%);top:45%;left:38%;animation:drift 34s ease-in-out infinite alternate}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(50px,35px) scale(1.1)}}
+
+/* SHELL */
+.shell{display:flex;min-height:100vh;position:relative;z-index:1}
+
+/* SIDEBAR */
+.sidebar{width:232px;min-width:232px;position:fixed;top:0;left:0;bottom:0;z-index:20;display:flex;flex-direction:column;background:rgba(4,4,10,0.94);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);border-right:1px solid rgba(255,255,255,0.06)}
+
+.logo-wrap{padding:30px 22px 24px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.logo-eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.25);letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px}
+.logo-mark{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1.5px;background:linear-gradient(135deg,#fff 0%,#a89eff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.logo-sub{font-family:'Barlow Condensed',sans-serif;font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:.12em;text-transform:uppercase;margin-top:5px}
+
+.nav{flex:1;padding:16px 10px;display:flex;flex-direction:column;gap:2px}
+.nav-section{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.2);letter-spacing:.2em;text-transform:uppercase;padding:12px 10px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;font-size:14px;color:rgba(255,255,255,0.45);cursor:pointer;transition:all .18s;border:none;background:none;width:100%;text-align:left;font-family:'Barlow',sans-serif;position:relative;letter-spacing:.01em;font-weight:500}
+.nav-item:hover{background:rgba(255,255,255,0.06);color:#fff}
+.nav-item.on{background:linear-gradient(135deg,rgba(108,99,255,0.2),rgba(108,99,255,0.06));color:#fff;font-weight:600;border:1px solid rgba(108,99,255,0.22)}
+.nav-item.on::before{content:'';position:absolute;left:0;top:18%;bottom:18%;width:2.5px;background:linear-gradient(180deg,#a89eff,#6c63ff);border-radius:0 3px 3px 0;box-shadow:0 0 10px rgba(108,99,255,0.5)}
+.nav-icon{font-size:15px;width:19px;text-align:center;flex-shrink:0}
+
+.sidebar-bottom{padding:14px 22px;border-top:1px solid rgba(255,255,255,0.06)}
+.api-mini{display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(255,255,255,0.25);font-family:'Barlow Condensed',sans-serif;letter-spacing:.06em;cursor:pointer;transition:color .15s}
+.api-mini:hover{color:rgba(255,255,255,0.6)}
+.api-dot{width:6px;height:6px;border-radius:50%;background:#f0606a;flex-shrink:0;box-shadow:0 0 6px rgba(240,96,106,0.4)}
+.api-dot.ok{background:#20d68a;box-shadow:0 0 6px rgba(32,214,138,0.4)}
+
+/* CONTENT */
+.content{margin-left:232px;flex:1;padding:36px 42px;max-width:1020px}
+
+/* CARDS */
+.card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:22px 24px;margin-bottom:14px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:border-color .2s}
+.card:hover{border-color:rgba(255,255,255,0.12)}
+.card-row{display:flex;gap:14px;margin-bottom:14px}
+.card-row .card{flex:1;margin-bottom:0}
+.card-accent{background:linear-gradient(135deg,rgba(108,99,255,0.12),rgba(108,99,255,0.03));border:1px solid rgba(108,99,255,0.22);border-radius:16px;padding:22px 24px;margin-bottom:14px}
+.card-gold{background:linear-gradient(135deg,rgba(255,180,50,0.08),rgba(255,140,0,0.02));border:1px solid rgba(255,165,0,0.18);border-radius:16px;padding:22px 24px;margin-bottom:14px}
+
+/* TYPOGRAPHY — todo +10% */
+.page-title{font-family:'Syne',sans-serif;font-size:29px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:6px}
+.page-subtitle{font-family:'Barlow Condensed',sans-serif;font-size:13px;color:rgba(255,255,255,0.3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:24px}
+.sec{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:.18em;margin-bottom:14px}
+.muted{font-size:13px;color:rgba(255,255,255,0.4);font-family:'Barlow',sans-serif}
+.empty{font-size:13px;color:rgba(255,255,255,0.25);padding:8px 0}
+
+/* INDEX HERO */
+.idx-num{font-family:'Syne',sans-serif;font-size:97px;font-weight:800;line-height:.85;letter-spacing:-4px;transition:color .6s}
+.idx-pct{font-family:'Syne',sans-serif;font-size:40px;font-weight:700;color:rgba(255,255,255,0.25);letter-spacing:-1px}
+.idx-status{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-top:10px}
+.glow-green{text-shadow:0 0 60px rgba(32,214,138,0.35)}
+.glow-amber{text-shadow:0 0 60px rgba(245,166,35,0.35)}
+.glow-red{text-shadow:0 0 60px rgba(240,96,106,0.35)}
+
+/* STAT BOXES */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stat-box{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:16px 18px;transition:all .2s}
+.stat-box:hover{border-color:rgba(255,255,255,0.13);transform:translateY(-1px)}
+.stat-val{font-family:'Syne',sans-serif;font-size:29px;font-weight:700}
+.stat-lbl{font-family:'Barlow Condensed',sans-serif;font-size:12px;color:rgba(255,255,255,0.4);letter-spacing:.07em;text-transform:uppercase;margin-top:3px}
+
+/* STREAK */
+.streak-num{font-family:'Syne',sans-serif;font-size:62px;font-weight:800;background:linear-gradient(135deg,#fff 0%,#a89eff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.streak-unit{font-family:'Barlow Condensed',sans-serif;font-size:13px;color:rgba(255,255,255,0.35);letter-spacing:.1em;text-transform:uppercase;margin-top:5px}
+
+/* AREA BARS */
+.area-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.area-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;color:rgba(255,255,255,0.6);letter-spacing:.04em;width:170px;flex-shrink:0}
+.area-bar-wrap{flex:1;height:6px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden}
+.area-fill{height:100%;border-radius:3px;transition:width .9s cubic-bezier(.4,0,.2,1);position:relative}
+.area-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 50%,rgba(255,255,255,0.2));border-radius:3px}
+.area-pct{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;width:38px;text-align:right;flex-shrink:0}
+
+/* SEÑALES DEL DÍA */
+.signal-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;margin-bottom:6px;transition:all .2s}
+.signal-item:hover{border-color:rgba(108,99,255,0.3)}
+.signal-item.done-signal{opacity:.5;background:rgba(32,214,138,0.04);border-color:rgba(32,214,138,0.15)}
+.signal-check{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s;background:transparent;color:transparent}
+.signal-check.done{background:#20d68a;border-color:#20d68a;color:#fff;box-shadow:0 0 12px rgba(32,214,138,0.4)}
+.signal-text{flex:1;font-size:14px;color:#fff;font-weight:500}
+.signal-item.done-signal .signal-text{text-decoration:line-through;color:rgba(255,255,255,0.4)}
+.signal-del{cursor:pointer;font-size:17px;background:none;border:none;color:rgba(255,255,255,0.2);transition:color .15s}
+.signal-del:hover{color:#f0606a}
+
+/* AI BOX */
+.ai-label{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:#a89eff;letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.ai-box{background:rgba(108,99,255,0.07);border:1px solid rgba(108,99,255,0.2);border-radius:10px;padding:14px 16px;font-size:14px;color:#f0f0f8;line-height:1.8;min-height:56px;font-family:'Barlow',sans-serif;transition:opacity .3s}
+
+/* QUOTE BOX */
+.quote-box{background:rgba(255,165,0,0.05);border-left:3px solid rgba(255,165,0,0.5);padding:12px 16px;border-radius:0 8px 8px 0;margin-bottom:4px}
+.quote-text{font-family:'Barlow',sans-serif;font-size:13px;color:rgba(255,220,120,0.9);line-height:1.7;font-style:italic}
+.quote-author{font-family:'Barlow Condensed',sans-serif;font-size:11px;color:rgba(255,165,0,0.5);letter-spacing:.1em;text-transform:uppercase;margin-top:4px}
+
+/* CHECK-IN */
+.chk-item{display:flex;align-items:flex-start;gap:12px;padding:13px 15px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;margin-bottom:6px;transition:all .2s}
+.chk-item:hover:not(.answered){border-color:rgba(255,255,255,0.15)}
+.chk-item.answered{opacity:.5}
+.chk-left{flex:1;min-width:0}
+.chk-name{font-size:15px;color:#ffffff;font-weight:500;font-family:'Barlow',sans-serif;letter-spacing:.01em}
+.chk-quote{font-size:12px;color:rgba(255,180,60,0.7);font-family:'Barlow',sans-serif;font-style:italic;margin-top:3px;line-height:1.5}
+.chk-btns{display:flex;gap:5px;flex-shrink:0;padding-top:2px}
+.cb{padding:6px 18px;border-radius:20px;border:1px solid rgba(255,255,255,0.15);font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:rgba(255,255,255,0.5);font-family:'Barlow Condensed',sans-serif;transition:all .15s;letter-spacing:.06em;text-transform:uppercase}
+.cb:hover{background:rgba(255,255,255,0.06);color:#fff}
+.cb.yes{background:rgba(32,214,138,0.12);border-color:rgba(32,214,138,0.4);color:#20d68a;box-shadow:0 0 10px rgba(32,214,138,0.1)}
+.cb.no{background:rgba(240,96,106,0.1);border-color:rgba(240,96,106,0.35);color:#f0606a}
+
+/* PROG BAR */
+.prog-bar{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-top:6px}
+.prog-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#6c63ff,#a89eff);transition:width .4s;box-shadow:0 0 8px rgba(108,99,255,0.4)}
+
+/* HABIT ITEMS */
+.habit-item{display:flex;align-items:center;gap:9px;padding:10px 13px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;margin-bottom:4px;transition:all .2s}
+.habit-item:hover{border-color:rgba(255,255,255,0.13)}
+.habit-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.habit-name{flex:1;font-size:14px;color:#fff;font-family:'Barlow',sans-serif;font-weight:500}
+.habit-tag{font-family:'Barlow Condensed',sans-serif;font-size:11px;color:rgba(255,255,255,0.25);letter-spacing:.06em}
+.habit-toggle{cursor:pointer;font-size:15px;user-select:none}
+.habit-del{cursor:pointer;font-size:17px;padding:0 3px;background:none;border:none;color:rgba(255,255,255,0.2);transition:color .15s;line-height:1}
+.habit-del:hover{color:#f0606a}
+
+/* BANCO */
+.bank-item{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;margin-bottom:5px;cursor:pointer;transition:all .2s}
+.bank-item:hover:not(.in){border-color:rgba(108,99,255,0.4);background:rgba(108,99,255,0.06);transform:translateX(3px)}
+.bank-item.in{opacity:.4;cursor:default}
+.bi-left{flex:1;min-width:0}
+.bi-name{font-size:14px;color:#fff;font-family:'Barlow',sans-serif;font-weight:500}
+.bi-quote{font-size:12px;color:rgba(255,180,60,0.6);font-style:italic;margin-top:2px;font-family:'Barlow',sans-serif;line-height:1.5}
+.bi-tag{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:.06em;flex-shrink:0;margin-top:3px}
+
+/* HISTORIAL */
+.hist-row{display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.hist-date{font-family:'Barlow Condensed',sans-serif;font-size:13px;color:rgba(255,255,255,0.45);letter-spacing:.04em;width:72px;flex-shrink:0}
+.hist-bar{flex:1;height:5px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden}
+.hist-fill{height:100%;border-radius:3px}
+.hist-pct{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;width:38px;text-align:right;flex-shrink:0}
+.mini-chart{display:flex;align-items:flex-end;gap:5px;height:84px;padding-top:10px}
+.mini-bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.mini-bar-fill{width:100%;border-radius:4px 4px 0 0;min-height:3px;transition:height .6s cubic-bezier(.4,0,.2,1)}
+.mini-bar-lbl{font-family:'Barlow Condensed',sans-serif;font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:.04em}
+
+/* GROUP TITLE */
+.grp-title{display:flex;align-items:center;gap:8px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.14em;margin:20px 0 8px}
+
+/* FORMS */
+input[type=text],input[type=password],select{padding:9px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:#fff;font-size:14px;font-family:'Barlow',sans-serif;outline:none;transition:border-color .2s,box-shadow .2s}
+input[type=text]:focus,input[type=password]:focus,select:focus{border-color:#6c63ff;box-shadow:0 0 0 3px rgba(108,99,255,0.12)}
+input[type=text]{flex:1;min-width:100px}
+.form-row{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.btn{padding:10px 20px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Barlow Condensed',sans-serif;transition:all .2s;letter-spacing:.06em;text-transform:uppercase}
+.btn:hover{background:rgba(255,255,255,0.07);border-color:rgba(108,99,255,0.5);color:#a89eff}
+.btn-primary{background:linear-gradient(135deg,#6c63ff,#4a43cc);border-color:transparent;color:#fff;box-shadow:0 4px 18px rgba(108,99,255,0.35)}
+.btn-primary:hover{opacity:.9;color:#fff;transform:translateY(-1px);box-shadow:0 6px 24px rgba(108,99,255,0.45)}
+.btn-gold{background:linear-gradient(135deg,rgba(255,165,0,0.2),rgba(255,140,0,0.1));border-color:rgba(255,165,0,0.35);color:rgba(255,210,80,0.9)}
+.btn-gold:hover{background:rgba(255,165,0,0.15);color:#ffd040}
+select.mini{padding:4px 7px;font-size:12px;border-radius:6px;border-color:rgba(255,255,255,0.1)}
+
+/* ══════════════════════════════════════════
+   MANUAL — MODAL EMERGENTE (reemplaza reader-overlay)
+   En desktop: modal centrado clásico
+   En mobile: bottom sheet que sube desde abajo, ocupa 92% del viewport
+   ══════════════════════════════════════════ */
+.manual-modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.82);
+  backdrop-filter:blur(12px);
+  display:none;
+  align-items:flex-end; /* mobile: bottom sheet */
+  justify-content:center;
+  z-index:200;
+  padding:0;
+}
+.manual-modal-overlay.open{display:flex}
+
+.manual-modal{
+  background:rgba(8,8,18,0.98);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:24px 24px 0 0; /* mobile: esquinas arriba */
+  width:100%;
+  max-height:92vh;
+  display:flex;
+  flex-direction:column;
+  box-shadow:0 -20px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(108,99,255,0.08);
+  overflow:hidden;
+  /* animación: sube desde abajo */
+  animation:slideUp .28s cubic-bezier(.4,0,.2,1) both;
+}
+@keyframes slideUp{
+  from{transform:translateY(40px);opacity:0}
+  to{transform:translateY(0);opacity:1}
+}
+
+/* Desktop: modal centrado flotante */
+@media(min-width:721px){
+  .manual-modal-overlay{align-items:center;padding:24px}
+  .manual-modal{
+    border-radius:20px;
+    width:620px;
+    max-width:92vw;
+    max-height:88vh;
+  }
+}
+
+/* drag handle visual (mobile) */
+.manual-modal-handle{
+  width:40px;height:4px;
+  background:rgba(255,255,255,0.15);
+  border-radius:2px;
+  margin:12px auto 0;
+  flex-shrink:0;
+}
+@media(min-width:721px){.manual-modal-handle{display:none}}
+
+.manual-modal-header{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 20px 14px;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+  flex-shrink:0;
+}
+.manual-modal-close{
+  width:36px;height:36px;border-radius:10px;
+  border:1px solid rgba(255,255,255,0.1);
+  background:transparent;color:#fff;font-size:18px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-family:'Barlow',sans-serif;
+}
+.manual-modal-title{
+  font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:#fff;flex:1;
+}
+.manual-modal-progress{
+  font-family:'Barlow Condensed',sans-serif;font-size:12px;color:rgba(255,255,255,0.3);letter-spacing:.08em;flex-shrink:0;
+}
+.manual-modal-body{
+  flex:1;overflow-y:auto;
+  padding:22px 22px 28px;
+  font-size:15px;line-height:1.85;
+  color:rgba(255,255,255,0.8);
+  font-family:'Barlow',sans-serif;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+}
+.manual-modal-body p{font-size:15px;line-height:1.85;margin-bottom:14px}
+.manual-modal-body b{color:#fff;font-weight:600}
+.manual-modal-footer{
+  display:flex;gap:10px;
+  padding:14px 20px;
+  border-top:1px solid rgba(255,255,255,0.07);
+  flex-shrink:0;
+  background:rgba(6,6,14,0.97);
+}
+.manual-modal-footer .btn{flex:1;text-align:center;padding:14px}
+
+/* TOC de la página manual */
+.reader-toc{display:flex;flex-direction:column;gap:3px;padding:0}
+.reader-toc-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;cursor:pointer;border:1px solid transparent;transition:all .18s;background:rgba(255,255,255,0.03)}
+.reader-toc-item:hover{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.08)}
+.reader-toc-item.active-toc{background:rgba(108,99,255,0.12);border-color:rgba(108,99,255,0.2)}
+
+/* MODAL API KEY */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-overlay.open{display:flex}
+.modal{background:rgba(10,10,20,0.97);border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:32px;width:440px;max-width:92vw;backdrop-filter:blur(24px);box-shadow:0 30px 90px rgba(0,0,0,0.7),0 0 0 1px rgba(108,99,255,0.1)}
+.modal h3{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;margin-bottom:8px}
+.modal p{font-size:14px;color:rgba(255,255,255,0.5);font-family:'Barlow',sans-serif;line-height:1.7;margin-bottom:18px}
+.modal input{width:100%;margin-bottom:14px}
+
+/* MOBILE */
+.menu-toggle{display:none;position:fixed;bottom:24px;right:20px;z-index:30;width:48px;height:48px;background:rgba(108,99,255,0.85);border:1px solid rgba(168,158,255,0.3);border-radius:14px;cursor:pointer;align-items:center;justify-content:center;font-size:18px;color:#fff;backdrop-filter:blur(16px);box-shadow:0 4px 20px rgba(108,99,255,0.4)}
+@media(max-width:720px){
+  .menu-toggle{display:flex}
+  .sidebar{transform:translateX(-100%);transition:transform .25s cubic-bezier(.4,0,.2,1)}
+  .sidebar.open{transform:translateX(0);box-shadow:0 0 80px rgba(0,0,0,0.9)}
+  .content{margin-left:0;padding:28px 16px 90px}
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .card-row{flex-direction:column}
+  .idx-num{font-size:75px}
+}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.page-title{animation:fadeUp .3s ease both}
+</style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+
+<div class="shell">
+<aside class="sidebar">
+  <div class="logo-wrap">
+    <div class="logo-eyebrow">Libertad Financiera</div>
+    <div class="logo-mark">IRP.</div>
+    <div class="logo-sub">Índice del Empresario</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Rendimiento</div>
+    <button class="nav-item on" onclick="sw('dash',this)"><span class="nav-icon">📊</span> Mi índice</button>
+    <button class="nav-item" onclick="sw('senales',this)"><span class="nav-icon">🎯</span> Señales del día</button>
+    <button class="nav-item" onclick="sw('checkin',this)"><span class="nav-icon">✅</span> Check-in</button>
+    <div class="nav-section">Configuración</div>
+    <button class="nav-item" onclick="sw('config',this)"><span class="nav-icon">⚙️</span> Mi plan</button>
+    <button class="nav-item" onclick="sw('banco',this)"><span class="nav-icon">📋</span> Banco de hábitos</button>
+    <button class="nav-item" onclick="sw('hist',this)"><span class="nav-icon">📈</span> Historial</button>
+    <div class="nav-section">Ayuda</div>
+    <button class="nav-item" onclick="sw('manual',this)"><span class="nav-icon">📖</span> Manual del empresario</button>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="api-mini" onclick="openModal()">
+      <div class="api-dot" id="api-dot"></div>
+      <span id="api-status">API key no configurada</span>
+    </div>
+  </div>
+</aside>
+
+<main class="content" id="content"></main>
+</div>
+
+<!-- MANUAL — MODAL EMERGENTE (reemplaza reader-overlay) -->
+<div class="manual-modal-overlay" id="manualModal" onclick="handleManualOverlayClick(event)">
+  <div class="manual-modal" id="manualModalInner">
+    <div class="manual-modal-handle"></div>
+    <div class="manual-modal-header">
+      <button class="manual-modal-close" onclick="closeManual()">←</button>
+      <div class="manual-modal-title" id="manual-title">Manual</div>
+      <div class="manual-modal-progress" id="manual-progress">1 / 9</div>
+    </div>
+    <div class="manual-modal-body" id="manual-body"></div>
+    <div class="manual-modal-footer">
+      <button class="btn" id="manual-prev" onclick="manualNav(-1)">← Anterior</button>
+      <button class="btn btn-primary" id="manual-next" onclick="manualNav(1)">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL API KEY -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3>Activar OKR con IA</h3>
+    <p>La IA genera cada semana un OKR personalizado basado en tus KPIs reales, aplicando la filosofía O'Leary al área donde más estás fallando. Para activarla necesitás una API key de Anthropic — el costo es mínimo (menos de $0.01 por consulta semanal).</p>
+    <p style="margin-bottom:14px;font-size:12px;color:rgba(255,255,255,0.35)">1. Creá una cuenta gratuita en console.anthropic.com → 2. Generá una API key → 3. Pegala acá abajo</p>
+    <input type="password" id="api-input" placeholder="sk-ant-..."/>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="saveKey()">Activar IA</button>
+      <button class="btn" onclick="closeModal()">Ahora no</button>
+    </div>
+    <p style="margin-top:14px;font-size:12px;color:rgba(255,255,255,0.2)">Tu key se guarda solo en tu dispositivo. La app funciona perfectamente sin ella.</p>
+  </div>
+</div>
+
+<script>
+const AREAS = {
+  capital_fisico:{label:'Capital Físico',sublabel:'Sin cuerpo no hay ejecución',color:'#20d68a',glow:'rgba(32,214,138,0.25)',emoji:'💪',quote:'"Prioriza el sueño, la comida y el ejercicio. De nada sirve la riqueza si no tenés la salud para disfrutarla." — O\'Leary'},
+  capital_mental:{label:'Capital Mental',sublabel:'Señal vs. Ruido',color:'#a89eff',glow:'rgba(168,158,255,0.25)',emoji:'🧠',quote:'"Los genios operan con 80% señal y 20% ruido. Si caés en 50/50, fracasarás." — O\'Leary'},
+  ejecucion:{label:'Ejecución & Números',sublabel:'Dominar tus métricas',color:'#4da6ff',glow:'rgba(77,166,255,0.25)',emoji:'⚡',quote:'"Si no conocés tus números, merecés arder en el infierno empresarial." — O\'Leary'},
+  red:{label:'Red & Relaciones',sublabel:'Due diligence relacional',color:'#f5a623',glow:'rgba(245,166,35,0.25)',emoji:'🤝',quote:'"La persona con quien te casás es la decisión financiera más crítica de tu vida." — O\'Leary'},
+  libertad_financiera:{label:'Libertad Financiera',sublabel:'Regla del 5% · Dividendos',color:'#f0606a',glow:'rgba(240,96,106,0.25)',emoji:'💰',quote:'"Nunca gastes el capital principal. Viví de los dividendos e intereses." — O\'Leary'}
+};
+
+const FREQS={diario:'Todos los días','lun-vie':'Lun a Vie',fds:'Fin de semana','3x':'3 veces/sem','2x':'2 veces/sem',lunes:'Solo Lunes',viernes:'Solo Viernes'};
+
+const BANCO=[
+  {id:'b1',area:'capital_fisico',name:'Entrenamiento físico',quote:'El cuerpo es tu primera empresa. Si falla, todo falla.'},
+  {id:'b2',area:'capital_fisico',name:'Cardio 30 min',quote:'La disciplina física se transfiere a la disciplina financiera.'},
+  {id:'b3',area:'capital_fisico',name:'Stretching / movilidad',quote:'Invertí en mantenimiento preventivo, no en reparaciones de emergencia.'},
+  {id:'b4',area:'capital_fisico',name:'Dormir 7-8 horas',quote:'Las decisiones más importantes se toman en la mañana, con la mente descansada. — Bezos'},
+  {id:'b5',area:'capital_fisico',name:'Acostarse antes de las 23hs',quote:'Respetar los ciclos de recuperación es respetar tu capital más valioso.'},
+  {id:'b6',area:'capital_fisico',name:'Hidratación 2L de agua',quote:'Los pequeños protocolos diarios construyen grandes resultados anuales.'},
+  {id:'b7',area:'capital_fisico',name:'Alimentación sin ultraprocesados',quote:'Lo que consumís hoy, lo ejecutás mañana.'},
+  {id:'b8',area:'capital_fisico',name:'Desayuno de alto rendimiento',quote:'No salgas al ring sin combustible en el cuerpo.'},
+  {id:'b9',area:'capital_fisico',name:'Sin alcohol',quote:'La claridad mental es tu ventaja competitiva más subestimada.'},
+  {id:'b10',area:'capital_fisico',name:'Vitaminas / suplementos',quote:'Optimizá cada sistema, no solo el financiero.'},
+  {id:'b11',area:'capital_fisico',name:'Pausa activa (5-10 min)',quote:'El descanso estratégico no es debilidad, es gestión del rendimiento.'},
+  {id:'b12',area:'capital_fisico',name:'Control de métricas corporales',quote:'Lo que no se mide, no se puede mejorar. En todo.'},
+  {id:'b13',area:'capital_mental',name:'Meditación / mindfulness 10 min',quote:'El silencio es donde se toman las mejores decisiones.'},
+  {id:'b14',area:'capital_mental',name:'Journaling / reflexión diaria',quote:'Escribir tus pensamientos es auditar tu mente.'},
+  {id:'b15',area:'capital_mental',name:'Lectura 20 min',quote:'Los líderes que leen gobiernan a los líderes que no leen.'},
+  {id:'b16',area:'capital_mental',name:'Curso / estudio activo',quote:'Invertí 24 meses aprendiendo antes de arriesgar capital.'},
+  {id:'b17',area:'capital_mental',name:'Aprender algo nuevo del rubro',quote:'La ventaja competitiva se construye con conocimiento acumulado.'},
+  {id:'b18',area:'capital_mental',name:'Sin redes sociales pasivas',quote:'Las redes son ruido. Tu tiempo es señal. Elegí bien.'},
+  {id:'b19',area:'capital_mental',name:'Sin pantallas 1hs antes de dormir',quote:'Protegé tu procesador nocturno.'},
+  {id:'b20',area:'capital_mental',name:'Práctica de gratitud',quote:'El ying y el yang del empresario: ambición y gratitud simultáneas.'},
+  {id:'b21',area:'capital_mental',name:'Revisión semanal de señales',quote:'¿Qué habría hecho Steve? Preguntate antes de cada decisión importante.'},
+  {id:'b22',area:'capital_mental',name:'Podcast / contenido de calidad',quote:'Rodeate de mentes que te obliguen a crecer.'},
+  {id:'b23',area:'ejecucion',name:'Definir las 3 señales del día',quote:'"¿Cuáles son las 3 cosas que tengo que hacer hoy?" — La pregunta de Jobs cada mañana.'},
+  {id:'b24',area:'ejecucion',name:'Completar las 3 tareas prioritarias',quote:'Ideas brillantes son comunes. Ejecución brillante es rara.'},
+  {id:'b25',area:'ejecucion',name:'Deep work 2hs sin interrupciones',quote:'El deep work es el activo más escaso del siglo XXI.'},
+  {id:'b26',area:'ejecucion',name:'Revisar números del negocio',quote:'Si no sabés cuándo llegás al punto de equilibrio, estás perdido.'},
+  {id:'b27',area:'ejecucion',name:'Cierre y revisión del día',quote:'El empresario mide, ajusta y vuelve a ejecutar. Todos los días.'},
+  {id:'b28',area:'ejecucion',name:'Preparar agenda del día siguiente',quote:'La improvisación es el lujo del aficionado.'},
+  {id:'b29',area:'ejecucion',name:'Avance en proyecto propio',quote:'Cada día sin avance en tu producto es un día que trabajás para otro.'},
+  {id:'b30',area:'ejecucion',name:'Articular tu idea en 90 segundos',quote:'Si no podés explicarlo en 90 segundos, no lo entendés lo suficiente.'},
+  {id:'b31',area:'ejecucion',name:'Inbox zero / comunicación eficiente',quote:'El ruido de la bandeja de entrada es el ladrón de tiempo más silencioso.'},
+  {id:'b32',area:'ejecucion',name:'Eliminar una actividad de bajo valor',quote:'Decir NO es la habilidad más rentable del empresario.'},
+  {id:'b33',area:'red',name:'Contactar a alguien de valor',quote:'Tu red es tu patrimonio. Invertí en ella como en activos.'},
+  {id:'b34',area:'red',name:'Escuchar 2/3 del tiempo en conversaciones',quote:'Los grandes gestores escuchan dos tercios del tiempo. El silencio es poder.'},
+  {id:'b35',area:'red',name:'Desconectarse del trabajo a horario',quote:'La familia también es un activo de largo plazo.'},
+  {id:'b36',area:'red',name:'Tiempo de calidad sin pantallas',quote:'Invertí en las relaciones que importan antes de que sea demasiado tarde.'},
+  {id:'b37',area:'red',name:'Auditar una relación (due diligence)',quote:'Hacé due diligence de tu pareja como lo harías con un socio de negocios.'},
+  {id:'b38',area:'red',name:'Aportar valor sin esperar retorno',quote:'El karma empresarial existe. Los que dan, reciben.'},
+  {id:'b39',area:'libertad_financiera',name:'Invertir el 15% del ingreso del día',quote:'Automatizá el 15% de tu salario en fondos indexados desde el primer día.'},
+  {id:'b40',area:'libertad_financiera',name:'Registrar gastos del día',quote:'No podés gestionar lo que no medís. Empezá por saber en qué va tu dinero.'},
+  {id:'b41',area:'libertad_financiera',name:'Sin compras impulsivas',quote:'Cada compra innecesaria es capital que deja de trabajar para vos.'},
+  {id:'b42',area:'libertad_financiera',name:'Revisar portafolio / inversiones',quote:'Regla del 5%: nunca más del 5% en un solo activo. Regla del 20% por sector.'},
+  {id:'b43',area:'libertad_financiera',name:'Revisar presupuesto mensual',quote:'La hipoteca nunca debe superar 1/3 de tus ingresos. Ni la hipoteca de vida.'},
+  {id:'b44',area:'libertad_financiera',name:'Ahorro del día',quote:'"$28 diarios invertidos al 8% anual = +$1.5M en 40 años." — O\'Leary'},
+  {id:'b45',area:'libertad_financiera',name:'Investigar oportunidad de inversión',quote:'La ignorancia financiera es el impuesto más caro que pagás.'},
+  {id:'b46',area:'libertad_financiera',name:'Sin gastos por encima del ingreso',quote:'Control de flujo: nunca gastés más de lo que entrá en ciclos de 30/60 días.'}
+];
+
+const DAYS=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const SCORE_LABELS=[
+  {min:90,label:'ÉLITE — Modo empresario activado 🔥',color:'#20d68a'},
+  {min:75,label:'ALTO RENDIMIENTO — Señal dominante 💪',color:'#4da6ff'},
+  {min:60,label:'EN CONSTRUCCIÓN — Seguí ejecutando 📈',color:'#f5a623'},
+  {min:40,label:'ZONA DE RIESGO — Reagrupate ⚠️',color:'#f5a623'},
+  {min:0, label:'RESET NECESARIO — Es el momento de elegir 🔄',color:'#f0606a'}
+];
+
+function scoreLbl(s){return SCORE_LABELS.find(x=>s>=x.min)||SCORE_LABELS[SCORE_LABELS.length-1]}
+function scHex(s){return s>=80?'#20d68a':s>=55?'#f5a623':'#f0606a'}
+function scGlow(s){return s>=80?'glow-green':s>=55?'glow-amber':'glow-red'}
+
+function defState(){
+  return{
+    plan:[
+      {bankId:'b1',freq:'3x',active:true},{bankId:'b4',freq:'diario',active:true},
+      {bankId:'b6',freq:'diario',active:true},{bankId:'b13',freq:'diario',active:true},
+      {bankId:'b15',freq:'diario',active:true},{bankId:'b18',freq:'lun-vie',active:true},
+      {bankId:'b23',freq:'lun-vie',active:true},{bankId:'b24',freq:'lun-vie',active:true},
+      {bankId:'b25',freq:'lun-vie',active:true},{bankId:'b29',freq:'lun-vie',active:true},
+      {bankId:'b33',freq:'3x',active:true},{bankId:'b39',freq:'diario',active:true},
+      {bankId:'b40',freq:'diario',active:true}
+    ],
+    signals:{},logs:{},customHabits:[],nid:100
+  };
+}
+
+let D;
+try{const r=localStorage.getItem('irp_v2');D=r?JSON.parse(r):defState();}catch(e){D=defState();}
+let TAB='dash';
+function save(){localStorage.setItem('irp_v2',JSON.stringify(D));}
+
+function fmtDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function todayKey(){return fmtDate(new Date())}
+function fmtDisp(k){const d=new Date(k+'T00:00:00');return DAYS[d.getDay()]+' '+d.getDate()+'/'+String(d.getMonth()+1).padStart(2,'0')}
+function getBi(bid){return BANCO.find(b=>b.id===bid)||D.customHabits.find(b=>b.id===bid)}
+
+function doesApply(freq,d){
+  const dw=d.getDay(),wk=dw>=1&&dw<=5,fds=dw===0||dw===6;
+  if(freq==='diario')return true;if(freq==='lun-vie')return wk;if(freq==='fds')return fds;
+  if(freq==='3x')return[1,3,5].includes(dw);if(freq==='2x')return[2,4].includes(dw);
+  if(freq==='lunes')return dw===1;if(freq==='viernes')return dw===5;return false;
+}
+function habitsFor(d){
+  return D.plan.filter(p=>p.active&&doesApply(p.freq,d))
+    .map(p=>{const bi=getBi(p.bankId);return bi?{...bi,bid:p.bankId}:null}).filter(Boolean);
+}
+function todayH(){return habitsFor(new Date())}
+
+function scoreDay(k){
+  const d=new Date(k+'T00:00:00'),h=habitsFor(d);
+  if(!h.length)return null;
+  const l=D.logs[k]||{};
+  const sigs=D.signals[k]||[];
+  const sigBonus=sigs.length>0?Math.round(sigs.filter(s=>s.done).length/sigs.length*15):0;
+  const habitScore=Math.round(h.filter(x=>l[x.bid]===true).length/h.length*85);
+  return Math.min(100,habitScore+sigBonus);
+}
+function areaDay(area,k){
+  const d=new Date(k+'T00:00:00'),h=habitsFor(d).filter(x=>x.area===area);
+  if(!h.length)return null;
+  const l=D.logs[k]||{};
+  return Math.round(h.filter(x=>l[x.bid]===true).length/h.length*100);
+}
+function avgLast(n,fn){
+  const s=[];
+  for(let i=0;i<n;i++){const d=new Date();d.setDate(d.getDate()-i);const v=fn(fmtDate(d));if(v!==null)s.push(v);}
+  return s.length?Math.round(s.reduce((a,b)=>a+b,0)/s.length):0;
+}
+function getStreak(){
+  let n=0;
+  for(let i=0;i<90;i++){const d=new Date();d.setDate(d.getDate()-i);const s=scoreDay(fmtDate(d));if(s===null||s<50)break;n++;}
+  return n;
+}
+
+function animCount(el,target,dur=900){
+  if(!el)return;
+  const start=performance.now();
+  function step(now){
+    const p=Math.min((now-start)/dur,1),e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(target*e);
+    if(p<1)requestAnimationFrame(step);else el.textContent=target;
+  }
+  requestAnimationFrame(step);
+}
+
+function sw(tab,el){
+  TAB=tab;
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  document.querySelector('.sidebar').classList.remove('open');
+  render();
+}
+function goTab(tab){
+  document.querySelectorAll('.nav-item').forEach(b=>{
+    const t=b.textContent.trim();
+    if((tab==='checkin'&&t.includes('Check'))||(tab==='config'&&t.includes('plan'))||(tab==='banco'&&t.includes('Banco'))||(tab==='hist'&&t.includes('Historial'))||(tab==='senales'&&t.includes('Señales'))||(tab==='manual'&&t.includes('Manual')))b.click();
+  });
+}
+
+function getKey(){return localStorage.getItem('irp_key')||''}
+function saveKey(){const v=document.getElementById('api-input').value.trim();if(v){localStorage.setItem('irp_key',v);updKey();closeModal();}}
+function updKey(){
+  const ok=!!getKey();
+  document.getElementById('api-dot').className='api-dot'+(ok?' ok':'');
+  document.getElementById('api-status').textContent=ok?'IA activa — OKR habilitado':'Activar IA (opcional)';
+}
+function openModal(){document.getElementById('api-input').value=getKey();document.getElementById('modal').classList.add('open');}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+
+function render(){
+  const c=document.getElementById('content');
+  if(TAB==='dash')rDash(c);
+  else if(TAB==='senales')rSenales(c);
+  else if(TAB==='checkin')rCheckin(c);
+  else if(TAB==='config')rConfig(c);
+  else if(TAB==='banco')rBanco(c);
+  else if(TAB==='hist')rHist(c);
+  else if(TAB==='manual')rManual(c);
+}
+
+// ── DASHBOARD ──
+function rDash(c){
+  const tk=todayKey(),i7=avgLast(7,scoreDay),i30=avgLast(30,scoreDay),ts=scoreDay(tk);
+  const th=todayH(),tl=D.logs[tk]||{},ans=th.filter(h=>tl[h.bid]!==undefined).length;
+  const st=getStreak(),sigs=D.signals[tk]||[],sigsDone=sigs.filter(s=>s.done).length;
+  const av={};Object.keys(AREAS).forEach(a=>{av[a]=avgLast(7,k=>areaDay(a,k));});
+  const lbl=scoreLbl(i7);
+  c.innerHTML=`
+  <div class="page-title">Índice del Empresario</div>
+  <div class="page-subtitle">Tu libertad se mide cada día</div>
+  <div class="card-row">
+    <div class="card-accent" style="flex:1.4;margin-bottom:0">
+      <div class="sec">Score de libertad — 7 días</div>
+      <div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:10px">
+        <div class="idx-num ${scGlow(i7)}" id="idx-c" style="color:${scHex(i7)}">0</div>
+        <div class="idx-pct">%</div>
+      </div>
+      <div class="idx-status" style="color:${lbl.color}">${lbl.label}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;flex:.8">
+      <div class="card" style="flex:1;margin-bottom:0">
+        <div class="sec">Racha</div>
+        <div class="streak-num" id="streak-c">0</div>
+        <div class="streak-unit">días ejecutando</div>
+      </div>
+      <div class="card" style="margin-bottom:0;background:rgba(255,165,0,0.04);border-color:rgba(255,165,0,0.15)">
+        <div class="sec" style="color:rgba(255,165,0,0.5)">🎯 Señales hoy</div>
+        <div style="font-family:'Syne',sans-serif;font-size:29px;font-weight:700;color:${sigsDone===sigs.length&&sigs.length>0?'#f5a623':'#fff'}">${sigsDone}/${sigs.length||'—'}</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;color:rgba(255,165,0,0.5);letter-spacing:.08em;text-transform:uppercase;margin-top:2px">${sigs.length===0?'Sin señales aún':sigsDone===sigs.length?'¡Señales completadas!':'Pendientes'}</div>
+      </div>
+    </div>
+  </div>
+  <div class="stat-grid" style="margin-top:14px">
+    <div class="stat-box"><div class="stat-val" style="color:${scHex(i7)}">${i7}%</div><div class="stat-lbl">Últimos 7 días</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:${scHex(i30)}">${i30}%</div><div class="stat-lbl">Últimos 30 días</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:${ts!==null?scHex(ts):'rgba(255,255,255,0.2)'}">${ts!==null?ts+'%':'—'}</div><div class="stat-lbl">Hoy</div></div>
+  </div>
+  <div class="card">
+    <div class="sec">KPIs por capital — promedio 7 días</div>
+    ${Object.entries(AREAS).map(([k,a])=>{
+      const cnt=D.plan.filter(p=>p.active&&getBi(p.bankId)?.area===k).length;
+      if(!cnt)return`<div class="area-row"><span class="area-name">${a.emoji} ${a.label}</span><span style="font-family:'Barlow Condensed',sans-serif;font-size:12px;color:rgba(255,255,255,0.2)">Sin hábitos activos</span></div>`;
+      const s=av[k];
+      return`<div class="area-row"><span class="area-name">${a.emoji} ${a.label}</span><div class="area-bar-wrap"><div class="area-fill" style="width:${s}%;background:linear-gradient(90deg,${a.color},${a.color}bb);box-shadow:0 0 10px ${a.glow}"></div></div><span class="area-pct" style="color:${scHex(s)}">${s}%</span></div>`;
+    }).join('')}
+  </div>
+  ${getKey()?`
+  <div class="card-gold">
+    <div class="ai-label">✦ OKR del empresario — esta semana</div>
+    <div class="ai-box" id="okr-box" style="background:rgba(255,165,0,0.05);border-color:rgba(255,165,0,0.15);color:#fff">Calculando tu OKR...</div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-gold" onclick="loadOKR(${JSON.stringify(av)})">Regenerar ↗</button>
+      <button class="btn" onclick="openModal()">⚙ API key</button>
+    </div>
+  </div>`:''}
+  <div class="card">
+    <div class="sec">Estado operativo hoy</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      ${sigs.length===0
+        ?`<button class="btn btn-primary" onclick="goTab('senales')">🎯 Definir señales del día ↗</button>`
+        :sigsDone===sigs.length
+        ?`<span style="color:#20d68a;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:.06em">✓ Señales completadas</span>`
+        :`<button class="btn btn-gold" onclick="goTab('senales')">🎯 ${sigsDone}/${sigs.length} señales — continuar ↗</button>`}
+      ${ans===0&&th.length>0
+        ?`<button class="btn btn-primary" onclick="goTab('checkin')">✅ Hacer check-in ↗</button>`
+        :ans===th.length&&th.length>0
+        ?`<span style="color:#20d68a;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:.06em">✓ Check-in completo ${ts}%</span>`
+        :`<button class="btn" onclick="goTab('checkin')">✅ ${ans}/${th.length} respondidos ↗</button>`}
+    </div>
+  </div>
+  <div class="card" style="border-color:rgba(255,255,255,0.04)">
+    <div class="sec">Filosofía del día</div>
+    ${randomQuote()}
+  </div>`;
+  animCount(document.getElementById('idx-c'),i7);
+  animCount(document.getElementById('streak-c'),st,700);
+  if(getKey())setTimeout(()=>loadOKR(av),400);
+}
+
+function randomQuote(){
+  const quotes=[
+    {text:'La disciplina para no gastar en cosas que no necesitás y mantener ese dinero trabajando para vos.',author:'Kevin O\'Leary'},
+    {text:'Solo un tercio de las personas tiene lo necesario para ser un emprendedor exitoso. El emprendimiento es el único camino hacia la libertad personal absoluta.',author:'Kevin O\'Leary'},
+    {text:'Las grandes ideas son comunes. Lo que realmente genera riqueza es un operador capaz que domine sus números.',author:'Kevin O\'Leary'},
+    {text:'Antes de tomar una decisión importante, preguntate: ¿Qué habría hecho Steve?',author:'Kevin O\'Leary sobre Jobs'},
+    {text:'La señal son las 3 a 5 tareas críticas que deben terminarse en las próximas 18 horas de vigilia.',author:'Jobs via O\'Leary'},
+    {text:'Nunca gastes el capital principal. Viví exclusivamente de los dividendos e intereses generados.',author:'Estrategia Georgette'},
+    {text:'Tu valor real es tu comunidad y tu autenticidad. Nunca promuevas un producto que no usés personalmente.',author:'Kevin O\'Leary'},
+    {text:'La verdadera resiliencia es navegar emocionalmente las subidas y bajadas sin perder de vista la Señal.',author:'Kevin O\'Leary'}
+  ];
+  const q=quotes[Math.floor(Math.random()*quotes.length)];
+  return`<div class="quote-box"><div class="quote-text">"${q.text}"</div><div class="quote-author">— ${q.author}</div></div>`;
+}
+
+// ── SEÑALES ──
+function rSenales(c){
+  const tk=todayKey();
+  if(!D.signals[tk])D.signals[tk]=[];
+  const sigs=D.signals[tk],done=sigs.filter(s=>s.done).length;
+  c.innerHTML=`
+  <div class="page-title">🎯 Señales del día</div>
+  <div class="page-subtitle">${fmtDisp(tk)}</div>
+  <div class="card-gold" style="margin-bottom:16px">
+    <div class="quote-text" style="color:rgba(255,220,100,0.9)">"Las señales son las 3 a 5 tareas críticas que deben terminarse en las próximas 18 horas de vigilia. Todo lo demás es ruido."</div>
+    <div class="quote-author" style="margin-top:6px">— Jobs via O'Leary</div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div class="sec" style="margin-bottom:0">Mis señales de hoy (${done}/${sigs.length})</div>
+      <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:${done===sigs.length&&sigs.length>0?'#f5a623':'rgba(255,255,255,0.3)'}">${sigs.length>0?Math.round(done/sigs.length*100)+'%':'—'}</div>
+    </div>
+    ${sigs.length===0?`<div class="empty" style="padding:16px 0;text-align:center"><div style="font-size:32px;margin-bottom:8px">🎯</div><div style="font-size:15px;color:rgba(255,255,255,0.4)">Definí tus señales del día abajo.</div><div class="muted" style="margin-top:4px">Máximo 5. Cada una debe poder hacerse hoy.</div></div>`:''}
+    ${sigs.map((s,i)=>`<div class="signal-item ${s.done?'done-signal':''}"><div class="signal-check ${s.done?'done':''}" onclick="toggleSignal('${tk}',${i})">${s.done?'✓':''}</div><span class="signal-text">${s.text}</span><button class="signal-del" onclick="delSignal('${tk}',${i})">×</button></div>`).join('')}
+    ${sigs.length<5?`<div style="display:flex;gap:7px;margin-top:10px"><input type="text" id="sig-inp" placeholder="¿Cuál es tu próxima señal crítica?" onkeydown="if(event.key==='Enter')addSignal('${tk}')" style="flex:1"><button class="btn btn-primary" onclick="addSignal('${tk}')">+ Señal</button></div>`:`<div class="muted" style="margin-top:8px">Máximo 5 señales por día. Enfocate en lo que importa.</div>`}
+  </div>
+  <div class="card" style="background:rgba(255,255,255,0.02)">
+    <div class="sec">Señales de referencia</div>
+    ${['Avanzar en el MVP de mi producto','Revisar y conocer mis numeros del mes','Practicar el pitch de 90 segundos','Contactar a un potencial cliente o socio','Completar un modulo del curso activo'].map((ex,xi)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer" onclick="addSignalRef('${tk}',${xi})">
+      <span style="color:rgba(255,255,255,0.2);font-size:17px">+</span>
+      <span style="font-size:13px;color:rgba(255,255,255,0.55);font-family:'Barlow',sans-serif">${ex}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+function addSignal(tk){
+  const inp=document.getElementById('sig-inp');
+  if(!inp||!inp.value.trim())return;
+  if(!D.signals[tk])D.signals[tk]=[];
+  if(D.signals[tk].length>=5)return;
+  D.signals[tk].push({text:inp.value.trim(),done:false});
+  inp.value='';save();render();
+}
+const SIGNAL_REFS=['Avanzar en el MVP de mi producto','Revisar y conocer mis números del mes','Practicar el pitch de 90 segundos','Contactar a un potencial cliente o socio','Completar un módulo del curso activo'];
+function addSignalRef(tk,idx){
+  const text=SIGNAL_REFS[idx];if(!text)return;
+  if(!D.signals[tk])D.signals[tk]=[];
+  if(D.signals[tk].length>=5||D.signals[tk].find(s=>s.text===text))return;
+  D.signals[tk].push({text,done:false});save();render();
+}
+function toggleSignal(tk,i){if(!D.signals[tk])return;D.signals[tk][i].done=!D.signals[tk][i].done;save();render();}
+function delSignal(tk,i){if(!D.signals[tk])return;D.signals[tk].splice(i,1);save();render();}
+
+// ── CHECK-IN ──
+function rCheckin(c){
+  const tk=todayKey(),log=D.logs[tk]||{},habits=todayH();
+  const ans=habits.filter(h=>log[h.bid]!==undefined).length;
+  const pct=habits.length?Math.round(ans/habits.length*100):0,ts=scoreDay(tk);
+  let h=`
+  <div class="page-title">✅ Check-in</div>
+  <div class="page-subtitle">${fmtDisp(tk)} — sé honesto, esto es solo para vos</div>
+  <div class="card" style="margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+      <span class="muted">${ans}/${habits.length} respondidos</span>
+      <span style="font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:#a89eff">${pct}%</span>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+    ${ans===habits.length&&habits.length>0?`<div style="margin-top:10px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:#20d68a;letter-spacing:.08em;text-transform:uppercase">✓ Check-in completo — Score de hoy: ${ts}%</div>`:''}
+  </div>`;
+  if(!habits.length){h+=`<div class="card"><div class="empty">No hay hábitos activos para hoy. <button class="btn" onclick="goTab('config')" style="margin-left:10px">Configurar mi plan ↗</button></div></div>`;c.innerHTML=h;return;}
+  Object.entries(AREAS).forEach(([ak,area])=>{
+    const aH=habits.filter(x=>x.area===ak);if(!aH.length)return;
+    h+=`<div class="grp-title"><div style="width:8px;height:8px;border-radius:50%;background:${area.color};box-shadow:0 0 8px ${area.glow}"></div>${area.emoji} ${area.label} <span style="font-weight:400;color:rgba(255,255,255,0.3);letter-spacing:0;text-transform:none;font-size:12px;font-family:'Barlow',sans-serif">— ${area.sublabel}</span></div>`;
+    aH.forEach(hab=>{
+      const val=log[hab.bid];
+      h+=`<div class="chk-item ${val!==undefined?'answered':''}">
+        <div class="chk-left">
+          <div class="chk-name">${hab.name}</div>
+          ${hab.quote?`<div class="chk-quote">"${hab.quote}"</div>`:''}
+        </div>
+        <div class="chk-btns">
+          <button class="cb ${val===true?'yes':''}" onclick="setLog('${tk}','${hab.bid}',true)">Sí</button>
+          <button class="cb ${val===false?'no':''}" onclick="setLog('${tk}','${hab.bid}',false)">No</button>
+        </div>
+      </div>`;
+    });
+  });
+  c.innerHTML=h;
+}
+function setLog(dk,bid,val){
+  if(!D.logs[dk])D.logs[dk]={};
+  if(D.logs[dk][bid]===val)delete D.logs[dk][bid];else D.logs[dk][bid]=val;
+  save();render();
+}
+
+// ── MI PLAN ──
+function rConfig(c){
+  let h=`
+  <div class="page-title">⚙️ Mi plan activo</div>
+  <div class="page-subtitle">Tu semana configurada</div>
+  <div class="card" style="margin-bottom:16px;background:rgba(255,255,255,0.02)">
+    <p class="muted" style="line-height:1.9">Activá o desactivá hábitos según tu semana. Cambiá la frecuencia cuando quieras. Los desactivados no aparecen en el check-in pero su historial queda guardado. <span style="color:rgba(255,165,0,0.7)">— "La improvisación es el lujo del aficionado."</span></p>
+  </div>`;
+  Object.entries(AREAS).forEach(([ak,area])=>{
+    const items=D.plan.filter(p=>getBi(p.bankId)?.area===ak);if(!items.length)return;
+    h+=`<div class="grp-title"><div style="width:8px;height:8px;border-radius:50%;background:${area.color};box-shadow:0 0 8px ${area.glow}"></div>${area.emoji} ${area.label} <span style="font-weight:400;color:rgba(255,255,255,0.3);letter-spacing:0;text-transform:none;font-size:12px;font-family:'Barlow',sans-serif">(${items.filter(p=>p.active).length} activos)</span></div>`;
+    items.forEach(p=>{
+      const bi=getBi(p.bankId);if(!bi)return;
+      h+=`<div class="habit-item" style="${!p.active?'opacity:.35':''}">
+        <span class="habit-toggle" onclick="togglePlan('${p.bankId}')">${p.active?'🟢':'⚪'}</span>
+        <div class="habit-dot" style="background:${area.color};box-shadow:${p.active?'0 0 5px '+area.glow:'none'}"></div>
+        <span class="habit-name">${bi.name}</span>
+        <select class="mini" onchange="setFreq('${p.bankId}',this.value)">${Object.entries(FREQS).map(([k,v])=>`<option value="${k}"${p.freq===k?' selected':''}>${v}</option>`).join('')}</select>
+        <button class="habit-del" onclick="removePlan('${p.bankId}')">×</button>
+      </div>`;
+    });
+  });
+  h+=`<div class="card" style="margin-top:16px">
+    <div class="sec">Agregar hábito propio</div>
+    <div class="form-row" style="margin-bottom:10px">
+      <input type="text" id="chn" placeholder="Nombre del hábito...">
+      <select id="cha">${Object.entries(AREAS).map(([k,a])=>`<option value="${k}">${a.label}</option>`).join('')}</select>
+      <select id="chf">${Object.entries(FREQS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select>
+      <button class="btn btn-primary" onclick="addCustom()">+ Agregar</button>
+    </div>
+    <button class="btn" onclick="goTab('banco')" style="font-size:12px">+ Desde el banco de hábitos ↗</button>
+  </div>`;
+  c.innerHTML=h;
+}
+function togglePlan(bid){const p=D.plan.find(x=>x.bankId===bid);if(p){p.active=!p.active;save();render();}}
+function setFreq(bid,freq){const p=D.plan.find(x=>x.bankId===bid);if(p){p.freq=freq;save();}}
+function removePlan(bid){D.plan=D.plan.filter(x=>x.bankId!==bid);save();render();}
+function addCustom(){
+  const n=document.getElementById('chn'),a=document.getElementById('cha'),f=document.getElementById('chf');
+  if(!n||!n.value.trim())return;
+  const id='c'+D.nid++;
+  D.customHabits.push({id,area:a.value,name:n.value.trim(),quote:''});
+  D.plan.push({bankId:id,freq:f.value,active:true});
+  n.value='';save();render();
+}
+
+// ── BANCO ──
+function rBanco(c){
+  const inPlan=new Set(D.plan.map(p=>p.bankId));
+  let h=`
+  <div class="page-title">📋 Banco de hábitos</div>
+  <div class="page-subtitle">46 hábitos del empresario — con filosofía O'Leary</div>
+  <div class="card" style="margin-bottom:16px;background:rgba(255,255,255,0.02)">
+    <p class="muted" style="line-height:1.9">Hacé clic para agregar a tu plan. Ajustá la frecuencia desde <b style="color:#fff">Mi plan</b>. Cada hábito tiene el contexto de por qué importa.</p>
+  </div>`;
+  Object.entries(AREAS).forEach(([ak,area])=>{
+    const items=BANCO.filter(b=>b.area===ak);
+    h+=`<div class="grp-title"><div style="width:8px;height:8px;border-radius:50%;background:${area.color};box-shadow:0 0 8px ${area.glow}"></div>${area.emoji} ${area.label} <span style="font-weight:400;color:rgba(255,255,255,0.3);letter-spacing:0;text-transform:none;font-size:12px;font-family:'Barlow',sans-serif">— ${area.sublabel}</span></div>`;
+    items.forEach(bi=>{
+      const has=inPlan.has(bi.id);
+      const onclick=has?'':'addFromBank("'+bi.id+'")';
+      h+=`<div class="bank-item ${has?'in':''}" onclick="${onclick}">
+        <div class="habit-dot" style="background:${area.color};margin-top:5px;flex-shrink:0"></div>
+        <div class="bi-left">
+          <div class="bi-name">${bi.name}</div>
+          ${bi.quote?`<div class="bi-quote">${bi.quote}</div>`:''}
+        </div>
+        <div class="bi-tag" style="color:${has?'#20d68a':'rgba(255,255,255,0.2)'}">${has?'✓ En mi plan':'+ Agregar'}</div>
+      </div>`;
+    });
+  });
+  c.innerHTML=h;
+}
+function addFromBank(bid){
+  if(!D.plan.find(p=>p.bankId===bid)){D.plan.push({bankId:bid,freq:'diario',active:true});save();render();}
+}
+
+// ── HISTORIAL ──
+function rHist(c){
+  const keys=[];for(let i=29;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);keys.push(fmtDate(d));}
+  const wd=keys.filter(k=>D.logs[k]&&Object.keys(D.logs[k]).length>0);
+  const sc7=keys.slice(-7);
+  const scores=wd.map(k=>scoreDay(k)).filter(s=>s!==null);
+  const best=scores.length?Math.max(...scores):0,worst=scores.length?Math.min(...scores):0,avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0;
+  let h=`
+  <div class="page-title">📈 Historial</div>
+  <div class="page-subtitle">Tu trayectoria de libertad</div>
+  <div class="card-row">
+    <div class="card">
+      <div class="sec">Últimos 7 días</div>
+      <div class="mini-chart">
+        ${sc7.map(k=>{
+          const s=scoreDay(k)??0,d=new Date(k+'T00:00:00');
+          const has=D.logs[k]&&Object.keys(D.logs[k]).length>0;
+          const col=has?scHex(s):'rgba(255,255,255,0.05)';
+          const gsh=has&&s>=80?'0 0 10px rgba(32,214,138,0.4)':has&&s>=55?'0 0 10px rgba(245,166,35,0.3)':has?'0 0 10px rgba(240,96,106,0.3)':'none';
+          return`<div class="mini-bar"><div class="mini-bar-fill" style="background:${col};height:${s*.68}px;box-shadow:${gsh};border-radius:4px 4px 0 0"></div><div class="mini-bar-lbl">${DAYS[d.getDay()]}</div><div class="mini-bar-lbl" style="color:${has?scHex(s):'rgba(255,255,255,0.2)'}">${has?s+'%':''}</div></div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="card" style="min-width:165px">
+      <div class="sec">Estadísticas</div>
+      <div style="margin-bottom:14px"><div class="stat-val" style="font-size:33px;color:${scHex(avg)}">${avg}%</div><div class="stat-lbl">Promedio general</div></div>
+      <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:12px;display:flex;flex-direction:column;gap:8px">
+        <div><span style="font-family:'Syne',sans-serif;font-weight:700;color:#20d68a">${best}%</span> <span class="muted">mejor día</span></div>
+        <div><span style="font-family:'Syne',sans-serif;font-weight:700;color:#f0606a">${worst}%</span> <span class="muted">día más bajo</span></div>
+        <div><span style="font-family:'Syne',sans-serif;font-weight:700;color:#fff">${wd.length}</span> <span class="muted">días ejecutados</span></div>
+      </div>
+      <div style="margin-top:12px;padding:10px;background:rgba(255,165,0,0.05);border-radius:8px;border:1px solid rgba(255,165,0,0.12)">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;color:rgba(255,165,0,0.6);letter-spacing:.1em;text-transform:uppercase">Nivel actual</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:${scoreLbl(avg).color};margin-top:3px">${scoreLbl(avg).label.split(' —')[0]}</div>
+      </div>
+    </div>
+  </div>
+  <div class="card"><div class="sec">Registro diario — últimos 30 días</div>`;
+  if(!wd.length){h+=`<div class="empty" style="padding:20px 0;text-align:center"><div style="font-size:28px;margin-bottom:8px">📊</div><div>Completá tu primer check-in para ver tu historial.</div></div>`;}
+  else{[...wd].reverse().forEach(k=>{const s=scoreDay(k);if(s===null)return;h+=`<div class="hist-row"><span class="hist-date">${fmtDisp(k)}</span><div class="hist-bar"><div class="hist-fill" style="width:${s}%;background:linear-gradient(90deg,${scHex(s)},${scHex(s)}88)"></div></div><span class="hist-pct" style="color:${scHex(s)}">${s}%</span></div>`;});}
+  h+=`</div>`;c.innerHTML=h;
+}
+
+// ── OKR IA ──
+async function loadOKR(av){
+  const box=document.getElementById('okr-box');if(!box)return;
+  const key=getKey();
+  if(!key){box.textContent='Configurá tu API key para activar el OKR del empresario con filosofía O\'Leary.';box.style.opacity='1';return;}
+  const activas=Object.entries(AREAS)
+    .filter(([k])=>D.plan.some(p=>p.active&&getBi(p.bankId)?.area===k))
+    .map(([k,a])=>`${a.label} (${a.sublabel}): ${av[k]}%`).join(' | ');
+  box.textContent='Generando tu OKR...';box.style.opacity='.5';
+  const prompt=`Sos un coach de libertad financiera con filosofía de Kevin O'Leary y Steve Jobs. KPIs del empresario esta semana: ${activas}.
+
+Generá 1 OKR con alma empresarial para el área más baja:
+- Objetivo: debe ser transformador y específico
+- KR1: métrica concreta y alcanzable esta semana  
+- KR2: acción de ejecución con fecha
+
+Aplicá la filosofía: Señal vs Ruido, Regla del 5%, Dominio de números. Máximo 6 líneas. Español rioplatense. Sin intro, directo al OKR.`;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,
+        system:prompt,messages:[{role:'user',content:'Generá mi OKR empresarial.'}]})
+    });
+    const data=await r.json();
+    box.style.opacity='1';
+    box.textContent=data.content?.[0]?.text||'Sin respuesta.';
+  }catch(e){box.style.opacity='1';box.textContent='Error al conectar. Verificá tu API key.';}
+}
+
+// ══════════════════════════════════════════
+// MANUAL — SISTEMA DE MODAL EMERGENTE
+// ══════════════════════════════════════════
+let manualIdx=0;
+
+const MANUAL_SECTIONS=[
+  {
+    icon:'🚀',title:'Primeros pasos',color:'#a89eff',
+    content:`<p>Bienvenido al <b>IRP — Índice de Rendimiento del Empresario</b>. Esta app no es un tracker de hábitos genérico. Es un sistema de medición de tu avance hacia la libertad personal y financiera, con la filosofía de Kevin O'Leary y Steve Jobs como columna vertebral.</p>
+    <p>Todo lo que registrás se guarda en tu dispositivo (localStorage). No hay cuenta, no hay servidor, no hay terceros. Tus datos son exclusivamente tuyos.</p>
+    <div class="quote-box" style="margin-top:16px"><div class="quote-text">"El emprendimiento es el único camino hacia la libertad personal absoluta."</div><div class="quote-author">— Kevin O'Leary</div></div>`
+  },
+  {
+    icon:'🏛️',title:'Las 5 áreas del empresario',color:'#20d68a',
+    content:`<p>La app mide tu rendimiento en 5 capitales. No son categorías de bienestar — son los pilares que sostienen la libertad financiera.</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+      ${Object.entries(AREAS).map(([k,a])=>`
+      <div style="padding:14px;background:rgba(255,255,255,0.04);border-radius:12px;border-left:3px solid ${a.color}">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;color:#fff;letter-spacing:.04em;margin-bottom:4px">${a.emoji} ${a.label}</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:8px">${a.sublabel}</div>
+        <div style="font-size:14px;color:rgba(255,200,80,0.8);font-style:italic;line-height:1.7">${a.quote}</div>
+      </div>`).join('')}
+    </div>`
+  },
+  {
+    icon:'📊',title:'Cómo se calcula tu índice',color:'#4da6ff',
+    content:`<p>Tu <b>Score de Libertad</b> es un número entre 0 y 100 que refleja qué tan bien estás ejecutando tu plan. Se calcula combinando dos fuentes:</p>
+    <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
+      <div style="padding:14px;background:rgba(77,166,255,0.08);border:1px solid rgba(77,166,255,0.2);border-radius:12px">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#4da6ff;font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">85% — Hábitos del check-in</div>
+        <div style="font-size:15px;color:rgba(255,255,255,0.65);line-height:1.8">Porcentaje de hábitos marcados como "Sí" sobre el total que aplican a ese día según su frecuencia configurada.</div>
+      </div>
+      <div style="padding:14px;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:12px">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#f5a623;font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">15% — Señales del día</div>
+        <div style="font-size:15px;color:rgba(255,255,255,0.65);line-height:1.8">Porcentaje de señales críticas completadas. Si definís 3 señales y completás 2, suman 10 puntos extra al score.</div>
+      </div>
+    </div>
+    <div style="margin-top:16px;display:flex;flex-direction:column;gap:6px">
+      ${[{min:90,lbl:'ÉLITE',col:'#20d68a',desc:'Modo empresario activado. Top 1% de ejecución.'},
+         {min:75,lbl:'ALTO RENDIMIENTO',col:'#4da6ff',desc:'Señal dominante. Seguís construyendo libertad.'},
+         {min:60,lbl:'EN CONSTRUCCIÓN',col:'#f5a623',desc:'Vas bien pero hay áreas que necesitan atención.'},
+         {min:40,lbl:'ZONA DE RIESGO',col:'#f5a623',desc:'Reagrupate. Revisá tu plan y simplificá.'},
+         {min:0, lbl:'RESET NECESARIO',col:'#f0606a',desc:'El 100% de los que abandonaron también empezaron.'}
+      ].map(s=>`<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:8px;border-left:3px solid ${s.col}">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:${s.col};font-size:13px;letter-spacing:.06em;min-width:110px;flex-shrink:0">${s.min}%+ ${s.lbl}</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.55);line-height:1.6">${s.desc}</div>
+      </div>`).join('')}
+    </div>`
+  },
+  {
+    icon:'🎯',title:'Señales del día — método Jobs',color:'#f5a623',
+    content:`<div class="quote-box"><div class="quote-text">"Las señales son las 3 a 5 tareas críticas que deben terminarse en las próximas 18 horas de vigilia. Todo lo demás es ruido."</div><div class="quote-author">— Jobs via O'Leary</div></div>
+    <p style="margin-top:16px">Esta es la sección más poderosa de la app. Cada mañana, <b>antes de abrir cualquier red social o email</b>, definís tus señales del día.</p>
+    <div style="margin-top:14px;padding:16px;background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.15);border-radius:12px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#f5a623;font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px">Reglas de las señales</div>
+      ${['Máximo 5 señales por día. Si tenés más, no son señales — son ruido.',
+         'Cada señal debe ser completable en las próximas 18 horas.',
+         'Una señal es una acción específica. Mal: "trabajar en el proyecto". Bien: "terminar el módulo de precios".',
+         'Definílas a primera hora de la mañana, antes de revisar el teléfono.',
+         'Al hacer el check-in nocturno, marcá las que completaste. Forman el 15% de tu score.'
+      ].map((r,i)=>`<div style="display:flex;gap:12px;padding:9px 0;border-bottom:1px solid rgba(245,166,35,0.08);font-size:15px;color:rgba(255,255,255,0.7);line-height:1.7"><span style="font-family:'Syne',sans-serif;font-weight:700;color:#f5a623;flex-shrink:0">${i+1}</span>${r}</div>`).join('')}
+    </div>`
+  },
+  {
+    icon:'✅',title:'El check-in nocturno',color:'#20d68a',
+    content:`<p>El check-in es tu auditoria diaria. Se hace <b>de noche, antes de dormir</b>. Es el momento donde le rendís cuentas a la única persona que importa: vos mismo.</p>
+    <div style="margin-top:14px;padding:16px;background:rgba(32,214,138,0.06);border:1px solid rgba(32,214,138,0.15);border-radius:12px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#20d68a;font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px">Protocolo de 5 minutos</div>
+      ${['Abrí la app en la sección Check-in.',
+         'Por cada hábito que aparece, respondé Sí o No — honestamente.',
+         'No aparecen todos los hábitos: solo los que configuraste para ese día de la semana.',
+         'Si respondiste Sí a todos, tu score del día es máximo.',
+         'Al terminar, tu índice del día se calcula automáticamente.'
+      ].map((s,i)=>`<div style="display:flex;gap:12px;padding:9px 0;border-bottom:1px solid rgba(32,214,138,0.08);font-size:15px;color:rgba(255,255,255,0.7);line-height:1.7"><span style="font-family:'Syne',sans-serif;font-weight:700;color:#20d68a;flex-shrink:0;width:18px">${i+1}</span>${s}</div>`).join('')}
+    </div>
+    <div class="quote-box" style="margin-top:16px"><div class="quote-text">"Sé honesto. Esto es solo para vos. El autoengaño es el lujo más caro del emprendedor."</div><div class="quote-author">— Filosofía IRP</div></div>`
+  },
+  {
+    icon:'⚙️',title:'Configurar tu plan semanal',color:'#a89eff',
+    content:`<p>El plan es el corazón de la personalización. Podés tener 5 hábitos activos esta semana y 15 la próxima. <b>Todo es configurable sin perder historial.</b></p>
+    <div style="margin-top:14px;padding:16px;background:rgba(168,158,255,0.07);border:1px solid rgba(168,158,255,0.15);border-radius:12px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#a89eff;font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">Frecuencias disponibles</div>
+      ${Object.entries(FREQS).map(([k,v])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:15px"><span style="color:rgba(255,255,255,0.7)">${v}</span><span style="font-family:'Barlow Condensed',sans-serif;color:#a89eff;font-size:13px;letter-spacing:.06em">${k}</span></div>`).join('')}
+    </div>
+    <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#fff;font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Estrategia recomendada</div>
+      ${['Primera semana: activá solo 5-7 hábitos. La constancia vale más que la ambición.',
+         'Cuando llegues al 75%+ durante 2 semanas seguidas, agregá 2-3 hábitos nuevos.',
+         'Usá Lun-Vie para hábitos laborales. Los fines de semana quedan para recuperación.',
+         'Los hábitos desactivados conservan su historial — podés reactivarlos sin perder nada.',
+         'Podés agregar hábitos propios además del banco predefinido.'
+      ].map(s=>`<div style="display:flex;gap:10px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><span style="color:#a89eff;flex-shrink:0;margin-top:2px">→</span>${s}</div>`).join('')}
+    </div>`
+  },
+  {
+    icon:'✦',title:"OKR con IA — activar el asistente",color:'#f5a623',
+    content:`<p>Cada semana la IA analiza tus KPIs por área y genera un OKR (Objetivo + 2 Key Results) con filosofía O'Leary, enfocado en el área donde más estás fallando.</p>
+    <div style="margin-top:14px;padding:16px;background:rgba(255,165,0,0.06);border:1px solid rgba(255,165,0,0.15);border-radius:12px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#f5a623;font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px">Para activar la IA</div>
+      ${['Entrá a console.anthropic.com y creá una cuenta (hay plan gratuito).',
+         'Generá una API key en la sección "API Keys".',
+         'En la app, tocá el punto de estado abajo a la izquierda del menú.',
+         'Pegá tu key y guardá. Se almacena solo en tu dispositivo.',
+         'El OKR se genera automáticamente al abrir el dashboard.',
+         'Podés regenerarlo manualmente con el botón "Regenerar".'
+      ].map((s,i)=>`<div style="display:flex;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,165,0,0.08);font-size:15px;color:rgba(255,255,255,0.7);line-height:1.7"><span style="font-family:'Syne',sans-serif;font-weight:700;color:#f5a623;flex-shrink:0;width:18px">${i+1}</span>${s}</div>`).join('')}
+    </div>
+    <div class="quote-box" style="margin-top:16px"><div class="quote-text">"Si no conocés tus números, merecés arder en el infierno empresarial."</div><div class="quote-author">— Kevin O'Leary</div></div>`
+  },
+  {
+    icon:'🧠',title:"Filosofía base — O'Leary & Jobs",color:'#4da6ff',
+    content:`<p>Esta app no es neutral. Está construida sobre principios concretos. Conocerlos te ayuda a entender por qué cada hábito importa.</p>
+    <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
+      ${[
+        {title:'Señal vs. Ruido',color:'#a89eff',text:'Los genios operan con 80% señal y 20% ruido. La señal son tus 3-5 tareas críticas del día. Todo lo demás es ruido. Si tu ratio cae a 50/50, fracasarás.'},
+        {title:'Estrategia Georgette',color:'#20d68a',text:'Regla del 5%: nunca más del 5% de tu patrimonio en un solo activo. Regla del 20%: ningún sector supera el 20%. Nunca gastés el capital principal — viví de dividendos e intereses.'},
+        {title:'El aprendiz de 24 meses',color:'#f5a623',text:'Antes de lanzar tu empresa, trabajá 24 meses en el sector que te apasiona, aunque sea gratis. Entendé cómo se mueven todos los engranajes antes de arriesgar capital propio.'},
+        {title:'El protocolo de 90 segundos',color:'#4da6ff',text:'Debés poder explicar tu idea en 90 segundos o menos. Si no podés, no la entendés lo suficiente. Esta habilidad se entrena — practicá frente al espejo cada semana.'},
+        {title:'Due diligence relacional',color:'#f0606a',text:'La persona con quien te casás es la decisión financiera más crítica de tu vida. El divorcio puede aniquilar dos tercios de tu riqueza. Auditá los hábitos de gasto de tu pareja antes de comprometerte.'},
+        {title:'El caos creativo',color:'#a89eff',text:'Un gran líder necesita disciplina extrema en el negocio, pero también actividades que lo saquen de él (música, deporte, viajes). Las personas eclécticas encuentran soluciones que un robot no vería.'}
+      ].map(p=>`<div style="padding:14px;background:rgba(255,255,255,0.03);border-radius:10px;border-left:3px solid ${p.color}">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:${p.color};font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px">${p.title}</div>
+        <div style="font-size:15px;color:rgba(255,255,255,0.65);line-height:1.8">${p.text}</div>
+      </div>`).join('')}
+    </div>`
+  },
+  {
+    icon:'💾',title:'Tus datos — privacidad total',color:'#20d68a',
+    content:`<p>No hay servidor. No hay cuenta. No hay terceros. <b>Todo vive en el localStorage de tu navegador en este dispositivo.</b></p>
+    <div style="margin-top:14px;padding:16px;background:rgba(32,214,138,0.05);border:1px solid rgba(32,214,138,0.15);border-radius:12px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#20d68a;font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">Lo que se guarda en tu dispositivo</div>
+      ${['Tu plan activo (hábitos y frecuencias configurados).',
+         'Tu historial de check-ins (logs diarios de Sí/No).',
+         'Tus señales del día y su estado de completado.',
+         'Tus hábitos personalizados agregados.',
+         'Tu API key de Anthropic.'
+      ].map(s=>`<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid rgba(32,214,138,0.08);font-size:15px;color:rgba(255,255,255,0.7)"><span style="color:#20d68a;flex-shrink:0">✓</span>${s}</div>`).join('')}
+    </div>
+    <div style="margin-top:14px;padding:16px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid rgba(255,255,255,0.07)">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#fff;font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">Cómo hacer backup</div>
+      <p style="font-size:15px;color:rgba(255,255,255,0.6);margin-bottom:12px;line-height:1.8">Si limpiás el caché o cambiás de dispositivo, los datos se pierden. Para hacer backup, abrí la consola del navegador (F12) y ejecutá:</p>
+      <div style="background:rgba(0,0,0,0.5);border-radius:8px;padding:12px 14px;font-family:monospace;font-size:14px;color:#a89eff;border:1px solid rgba(255,255,255,0.08);word-break:break-all">copy(localStorage.getItem('irp_v2'))</div>
+      <p style="font-size:14px;color:rgba(255,255,255,0.35);margin-top:10px;line-height:1.7">Guardá ese texto. Para restaurar:<br><span style="font-family:monospace;color:#a89eff;font-size:13px">localStorage.setItem('irp_v2', TU_BACKUP)</span><br>y recargá la página.</p>
+    </div>`
+  }
+];
+
+// Página TOC del manual
+function rManual(c){
+  c.innerHTML=`
+  <div class="page-title">📖 Manual del empresario</div>
+  <div class="page-subtitle">Todo lo que necesitás saber para sacarle el máximo</div>
+  <div class="reader-toc">
+    ${MANUAL_SECTIONS.map((s,i)=>`
+    <div class="reader-toc-item" onclick="openManual(${i})">
+      <span style="font-size:20px;flex-shrink:0">${s.icon}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:15px;color:#fff;font-weight:500;font-family:'Barlow',sans-serif">${s.title}</div>
+      </div>
+      <span style="color:rgba(255,255,255,0.25);font-size:18px">›</span>
+    </div>`).join('')}
+  </div>
+  <div style="margin-top:16px">
+    <button class="btn btn-primary" style="width:100%;padding:15px;font-size:14px" onclick="openManual(0)">📖 Leer desde el principio ↗</button>
+  </div>`;
+}
+
+// Abrir modal del manual
+function openManual(idx){
+  manualIdx=idx;
+  renderManual();
+  document.getElementById('manualModal').classList.add('open');
+  document.getElementById('manual-body').scrollTop=0;
+}
+
+function closeManual(){
+  document.getElementById('manualModal').classList.remove('open');
+}
+
+// Click en overlay (fuera del modal) cierra
+function handleManualOverlayClick(e){
+  if(e.target===document.getElementById('manualModal'))closeManual();
+}
+
+function manualNav(dir){
+  manualIdx=Math.max(0,Math.min(MANUAL_SECTIONS.length-1,manualIdx+dir));
+  renderManual();
+  document.getElementById('manual-body').scrollTop=0;
+}
+
+function renderManual(){
+  const sec=MANUAL_SECTIONS[manualIdx],total=MANUAL_SECTIONS.length;
+  document.getElementById('manual-title').textContent=sec.icon+' '+sec.title;
+  document.getElementById('manual-progress').textContent=(manualIdx+1)+' / '+total;
+  document.getElementById('manual-body').innerHTML=sec.content;
+
+  const prev=document.getElementById('manual-prev');
+  const next=document.getElementById('manual-next');
+
+  if(manualIdx===0){prev.style.display='none';}
+  else{prev.style.display='';prev.textContent='← '+MANUAL_SECTIONS[manualIdx-1].title;}
+
+  if(manualIdx===total-1){
+    next.textContent='Ir al dashboard ↗';
+    next.onclick=function(){closeManual();goTab('dash');};
+  }else{
+    next.textContent=MANUAL_SECTIONS[manualIdx+1].title+' →';
+    next.onclick=function(){manualNav(1);};
+  }
+}
+
+// ── INIT ──
+updKey();render();
+</script>
+</body>
+</html>
